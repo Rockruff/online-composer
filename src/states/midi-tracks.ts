@@ -1,4 +1,5 @@
 import { bisect, bisect_nothrow } from '@/packages/bisect';
+import { compressJson, decompressJson } from '@/packages/compression';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
 
 export class Note {
@@ -68,9 +69,8 @@ export const tracks = reactive<Track[]>([]);
   let data = null;
   if (location.hash) {
     try {
-      data = location.hash.substring(1);
-      data = atob(data);
-      data = JSON.parse(data);
+      const hash = location.hash.substring(1);
+      data = decompressJson(hash);
     } catch (e) {
       /* empty */
       data = null;
@@ -91,9 +91,8 @@ export const tracks = reactive<Track[]>([]);
 }
 
 watch(tracks, (v) => {
-  const json = JSON.stringify(v);
-  const b64 = btoa(json);
-  location.hash = b64;
+  const compressed = compressJson(v);
+  location.hash = compressed;
 });
 
 export const transportTick = shallowRef(0);
